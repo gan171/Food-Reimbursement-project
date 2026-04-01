@@ -1,72 +1,91 @@
-# Food-Reimbursement-project
-Overtime Food Reimbursement — Automation Blueprint
-This is a classic multi-stage approval workflow problem. Let me break it down completely.
+# Overtime Food Reimbursement System
 
-The Workflow, Digitised
-Employee Submits Form + Bill
-        ↓
-   Admin Head
-  (Review & Approve)
-        ↓
- Reporting Manager
-  (Review & Approve)
-        ↓
-  Accounts Team
-  (Verify Bill & Approve)
-        ↓
-   Payment Released
-        ↓
-  Employee Notified ✅
-Each stage needs: view → action (approve/reject/comment) → notify next stage.
+A full-stack automation blueprint implementation for overtime food reimbursements with:
 
-Detailed Module Breakdown
-1. 🧾 Submission Module (Employee)
-The employee fills a form with:
+- **Frontend:** React + Vite (modern glassmorphism UI)
+- **Backend:** Node.js + Express
+- **Database:** MySQL
+- **Auth:** Session-based (`express-session` + MySQL session store)
+- **Uploads:** Multer (bill image/pdf)
+- **Email Notifications:** Nodemailer
+- **PDF Exports:** jsPDF
 
-Name, Employee ID, Department (auto-filled from login)
-Date of overtime, Time in/out
-Amount claimed
-Bill upload (image/PDF — scanned or photo)
-Purpose / brief description
+## Workflow implemented
 
-On submit → a unique claim ID is generated (e.g. FOOD-2026-0341) and the claim enters the queue.
+1. Employee submits reimbursement with bill upload.
+2. Claim moves through staged approvals:
+   - `ADMIN_HEAD`
+   - `REPORTING_MANAGER`
+   - `ACCOUNTS`
+3. Accounts can set approved amount and UTR reference.
+4. Notifications are sent at each stage transition.
+5. Dashboard provides monthly totals and SLA breach visibility.
 
-2. 🔔 Notification Engine
-Every stage transition triggers a notification:
+---
 
-Email to the next approver: "You have a pending food reimbursement claim from [Name] — ₹[amount]"
-In-app badge showing pending count
-Optional: WhatsApp/SMS for urgency (since you already have WhatsApp bot infra)
+## Project Structure
 
-Rejections send a notification back to the employee with the reason, allowing resubmission.
+- `backend/` Express API + MySQL logic.
+- `frontend/` Vite React app.
+- `backend/schema.sql` DB schema.
 
-3. ✅ Approval Module (Three-Stage)
-Each approver gets a dashboard showing:
+---
 
-All pending claims in their queue
-Claim details + attached bill preview
-Approve / Reject / Ask for clarification buttons
-A comment box (mandatory on rejection)
+## Quick Start
 
-Stage routing logic:
-Submission → looks up employee's reporting manager from the staff directory
-           → looks up admin head (fixed role or department-based)
-           → builds approval chain automatically
-This is the key insight — if you connect this to your existing staff directory app, the routing is automatic. No manual chain-building needed.
+### 1) Database setup
 
-4. 📄 Accounts Verification Module
-Accounts gets the final queue. They see:
+```sql
+SOURCE backend/schema.sql;
+```
 
-The bill image/PDF (zoomable)
-Claimed amount vs. a configurable reimbursement cap (e.g. ₹300/night)
-A field to enter the approved amount (may differ if bill is partial)
-Mark as "Payment Processed" with UTR/reference number
+Create seed users with hashed passwords (example roles: EMPLOYEE, ADMIN_HEAD, REPORTING_MANAGER, ACCOUNTS, IT_ADMIN).
 
+### 2) Backend setup
 
-5. 📊 Admin Dashboard
-For IT/management oversight:
+```bash
+cd backend
+npm install
+cp .env.example .env
+npm run dev
+```
 
-Total claims this month, total amount disbursed
-Average approval time per stage
-Claims pending > N days (SLA breach alerts)
-Export to Excel for payroll integration
+Suggested `.env`:
+
+```env
+PORT=4000
+FRONTEND_URL=http://localhost:5173
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=
+DB_NAME=food_reimbursements
+SESSION_SECRET=change_me
+SMTP_HOST=
+SMTP_PORT=587
+SMTP_USER=
+SMTP_PASS=
+MAIL_FROM=noreply@example.com
+```
+
+### 3) Frontend setup
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Optional frontend env (`frontend/.env`):
+
+```env
+VITE_API_URL=http://localhost:4000/api
+```
+
+---
+
+## Important Notes
+
+- Rejection requires comment in API validation.
+- Bill files are saved in `backend/src/uploads`.
+- SMTP is optional in development; if not configured, stage notifications are logged.
+- Dashboard route is restricted to `IT_ADMIN` and `ACCOUNTS` roles.
