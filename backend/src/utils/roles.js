@@ -1,0 +1,13 @@
+const roleAliases = {
+  EMPLOYEE: 'EMPLOYEE',
+  ADMIN_HEAD: 'ADMIN_HEAD',
+  ADMIN: 'ADMIN_HEAD',
+  REPORTING_MANAGER: 'REPORTING_MANAGER',
+  MANAGER: 'REPORTING_MANAGER',
+  ACCOUNTS: 'ACCOUNTS',
+  ACCOUNTS_TEAM: 'ACCOUNTS',
+  ACCOUNTANT: 'ACCOUNTS',
+  IT_ADMIN: 'IT_ADMIN'
+};
+
+export const normalizeRole = (role) => roleAliases[role] || role;
